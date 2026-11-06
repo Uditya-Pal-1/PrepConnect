@@ -1,0 +1,10 @@
+import React,{useState} from 'react';
+import {Link} from '../router';
+import Navbar from '../components/Navbar';
+import {apiPost} from '../lib/api';
+
+export default function ResetPassword(){
+  const token=new URLSearchParams(window.location.search).get('token');const[password,setPassword]=useState('');const[confirm,setConfirm]=useState('');const[error,setError]=useState('');const[done,setDone]=useState(false);const[busy,setBusy]=useState(false);
+  async function submit(event){event.preventDefault();setError('');if(password!==confirm){setError('The passwords do not match.');return;}setBusy(true);try{await apiPost('/api/auth/reset-password',{token,password});setDone(true);}catch(err){setError(err.message);}finally{setBusy(false);}}
+  return <><Navbar/><main className="auth-container"><section className="auth-card"><span className="eyebrow">ACCOUNT RECOVERY</span><h1>{done?'You’re all set.':'Choose a new password.'}</h1>{done?<><p className="subtitle">Your password has been changed. You can sign in with it now.</p><Link to="/login" className="auth-button auth-button-link">Go to sign in</Link></>:!token?<><p className="subtitle">This reset link is missing or invalid. Request a new one to continue.</p><Link to="/forgot-password" className="auth-button auth-button-link">Request a new link</Link></>:<><p className="subtitle">Choose a password with at least eight characters.</p>{error&&<p className="form-error" role="alert">{error}</p>}<form onSubmit={submit}><div className="form-group"><label htmlFor="password">New password</label><input id="password" type="password" minLength="8" autoComplete="new-password" value={password} onChange={event=>setPassword(event.target.value)} required/></div><div className="form-group"><label htmlFor="confirm">Confirm new password</label><input id="confirm" type="password" minLength="8" autoComplete="new-password" value={confirm} onChange={event=>setConfirm(event.target.value)} required/></div><button className="auth-button" disabled={busy}>{busy?'Updating…':'Reset password'}</button></form></>}</section></main></>;
+}
